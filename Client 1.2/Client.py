@@ -1,4 +1,3 @@
-# Import
 import sys
 import time
 import socket
@@ -69,25 +68,25 @@ class MainWindow(QMainWindow, Ui_Client):
             if self.shutdown:
                 try:
                     message = self.SendLine.text()
-                    self.Display.append('[' + self.name + '] :: ' + self.SendLine.text())
-                    self.sock.sendto((message + '//[PASS]').encode("utf-8"), self.server)
+                    self.Display.append(f'[{self.name}] :: {self.SendLine.text()}')
+                    self.sock.sendto(f'{message}//[PASS]'.encode("utf-8"), self.server)
                     self.SendLine.setText('')
                 except Exception as ClientSendingError:
-                    self.log.append('\n[{}]'.format(time.asctime()) + ' ' + str(ClientSendingError))
+                    self.log.append(f'\n[{time.asctime()}] {ClientSendingError}')
                     self.Display.append('<--ClientSendingError-->')
                     self.Display.append(str(ClientSendingError))
 
             # Host Sending
             if not self.shutdown:
                 try:
-                    message = '[{}] :: '.format(self.name) + self.SendLine.text() + '//[PASS]'
+                    message = f'[{self.name}] :: {self.SendLine.text()}//[PASS]'
                     display = '[' + self.name + '] :: ' + self.SendLine.text()
                     self.Display.append(display)
                     self.SendLine.setText('')
                     for client in self.clients:
                         self.sock.sendto(message.encode("utf-8"), client)
                 except Exception as ServerSendingError:
-                    self.log.append('\n[{}]'.format(time.asctime()) + ' ' + str(ServerSendingError))
+                    self.log.append(f'\n[{time.asctime()}] {ServerSendingError}')
                     self.Display.append('<--ServerSendingError-->')
                     self.Display.append(str(ServerSendingError))
         else:
@@ -100,7 +99,7 @@ class MainWindow(QMainWindow, Ui_Client):
                 file.write(i)
             file.close()
         except Exception as SaveError:
-            self.log.append('\n[{}]'.format(time.asctime()) + ' ' + str(SaveError))
+            self.log.append(f'\n[{time.asctime()}] {SaveError}')
             self.Display.append('<--SaveError-->')
             self.Display.append(str(SaveError))
 
@@ -109,14 +108,14 @@ class MainWindow(QMainWindow, Ui_Client):
         while self.connected:
             try:
                 data, addr = self.sock.recvfrom(1024)
-                sell = data.decode("utf-8").split('//')
-                if sell[-1] == '[FLAG]':
-                    self.Display.append(sell[0])
+                cell = data.decode("utf-8").split('//')
+                if cell[-1] == '[FLAG]':
+                    self.Display.append(cell[0])
                     self.leave()
-                if sell[-1] == '[INFO]':
-                    self.Display.append(sell[0])
-                elif sell[-1] == '[PASS]':
-                    self.Display.append(sell[0])
+                if cell[-1] == '[INFO]':
+                    self.Display.append(cell[0])
+                elif cell[-1] == '[PASS]':
+                    self.Display.append(cell[0])
             except Exception as ClientReceivingError:
                 if ClientReceivingError:
                     pass
@@ -134,7 +133,7 @@ class MainWindow(QMainWindow, Ui_Client):
                 self.sock.bind((ip, port))
                 self.sock.setblocking(False)
             except Exception as ClientSockError:
-                self.log.append('\n[{}]'.format(time.asctime()) + ' ' + str(ClientSockError))
+                self.log.append(f'\n[{time.asctime()}] {ClientSockError}')
                 self.run = False
                 self.Display.append('<--ClientSockError-->')
                 self.Display.append(str(ClientSockError))
@@ -143,7 +142,7 @@ class MainWindow(QMainWindow, Ui_Client):
             try:
                 self.server = (self.cIPv4.text(), int(self.cPort.text()))
             except Exception as ClientServerError:
-                self.log.append('\n[{}]'.format(time.asctime()) + ' ' + str(ClientServerError))
+                self.log.append(f'\n[{time.asctime()}] {ClientServerError}')
                 self.run = False
                 self.Display.append('<--ClientServerError-->')
                 self.Display.append(str(ClientServerError))
@@ -154,17 +153,17 @@ class MainWindow(QMainWindow, Ui_Client):
                 self.rt = threading.Thread(target=ex.receiving)
                 self.rt.start()
             except Exception as ClientStartReceivingError:
-                self.log.append('\n[{}]'.format(time.asctime()) + ' ' + str(ClientStartReceivingError))
+                self.log.append(f'\n[{time.asctime()}] {ClientStartReceivingError}')
                 self.run = False
                 self.Display.append('<--ClientStartReceivingError-->')
                 self.Display.append(str(ClientStartReceivingError))
 
             # Connecting to server
             try:
-                message = self.name + '//[NAME]'
+                message = f'{self.name}//[NAME]'
                 self.sock.sendto(message.encode("utf-8"), self.server)
             except Exception as ClientConnectionError:
-                self.log.append('\n[{}]'.format(time.asctime()) + ' ' + str(ClientConnectionError))
+                self.log.append(f'\n[{time.asctime()}] {ClientConnectionError}')
                 self.run = False
                 self.Display.append('<--ClientConnectionError-->')
                 self.Display.append(str(ClientConnectionError))
@@ -179,7 +178,7 @@ class MainWindow(QMainWindow, Ui_Client):
                 self.random()
                 self.Display.append('[You left the server]')
             except Exception as ClientLeaveError:
-                self.log.append('\n[{}]'.format(time.asctime()) + ' ' + str(ClientLeaveError))
+                self.log.append(f'\n[{time.asctime()}] {ClientLeaveError}')
                 self.run = True
                 self.Display.append('<--ClientLeaveError-->')
                 self.Display.append(str(ClientLeaveError))
@@ -193,8 +192,8 @@ class MainWindow(QMainWindow, Ui_Client):
         while not self.shutdown:
             try:
                 data, addr = self.sock.recvfrom(1024)
-                sell = data.decode("utf-8").split('//')
-                if sell[-1] == '[LEAVE]':
+                cell = data.decode("utf-8").split('//')
+                if cell[-1] == '[LEAVE]':
                     message = '[' + self.clients[addr] + '] :: ' + '[LEFT THE SERVER]'
                     self.Display.append(message)
                     self.message((data, addr), '[Le]')
@@ -203,15 +202,15 @@ class MainWindow(QMainWindow, Ui_Client):
                 elif addr not in self.clients:
                     if len(self.clients) < self.number:
                         print(1)
-                        self.clients[addr] = sell[0]
+                        self.clients[addr] = cell[0]
                         self.sock.sendto('[You have joined the server]//[PASS]'.encode("utf-8"), addr)
-                        message = '[' + sell[0] + '] :: ' + self.key['[Ji]']
+                        message = f'[{cell[0]}] :: {self.key["[Ji]"]}'
                         self.Display.append(message)
-                        self.message((sell[0], addr), '[JOINS THE SERVER]')
+                        self.message((cell[0], addr), '[JOINS THE SERVER]')
                     else:
                         self.sock.sendto((self.key['Si'] + '//[FLAG]').encode("utf-8"), addr)
                 else:
-                    message = '[{}] :: '.format(self.clients[addr]) + sell[0]
+                    message = f'[{self.clients[addr]}] :: {cell[0]}'
                     self.Display.append(message)
                     self.message((data, addr))
 
@@ -220,24 +219,22 @@ class MainWindow(QMainWindow, Ui_Client):
                     pass
         self.Display.append('<-<-<SERVER STOPPED>->->')
 
-    def message(self, sell, *args):
-        if args and sell:
-            data, addr = sell
-            k = self.key[args[0]]
-            message = '[{}] :: '.format(self.clients[addr]) + k + '//[INFO]'
+    def message(self, cell, *args):
+        if args and cell:
+            data, addr = cell
+            message = f'[{self.clients[addr]}] :: {self.key[args[0]]}//[INFO]'
             for client in self.clients:
                 if addr != client:
                     self.sock.sendto(message.encode("utf-8"), client)
-        elif sell and not args:
-            data, addr = sell
-            message = '[{}] :: '.format(self.clients[addr]) + data.decode("utf-8") + '//[PASS]'
+        elif cell and not args:
+            data, addr = cell
+            message = f'[{self.clients[addr]}] :: {data.decode("utf-8")}//[PASS]'
             for client in self.clients:
                 if addr != client:
                     self.sock.sendto(message.encode("utf-8"), client)
-        elif args and not sell:
-            k = self.key[args[0]]
+        elif args and not cell:
             for client in self.clients:
-                self.sock.sendto((k + '//[FLAG]').encode("utf-8"), client)
+                self.sock.sendto(f'{self.key[args[0]]}//[FLAG]'.encode("utf-8"), client)
 
     def start(self):
         self.run = True
@@ -252,7 +249,7 @@ class MainWindow(QMainWindow, Ui_Client):
                 self.rt = threading.Thread(target=ex.turn_on_server)
                 self.rt.start()
             except Exception as ServerStartError:
-                self.log.append('\n[{}]'.format(time.asctime()) + ' ' + str(ServerStartError))
+                self.log.append(f'\n[{time.asctime()}] {ServerStartError}')
                 self.run = False
                 self.Display.append('<--ServerStartError-->')
                 self.Display.append(str(ServerStartError))
@@ -267,7 +264,7 @@ class MainWindow(QMainWindow, Ui_Client):
                 self.sock.close()
                 self.rt.join()
             except Exception as ServerStopError:
-                self.log.append('\n[{}]'.format(time.asctime()) + ' ' + str(ServerStopError))
+                self.log.append(f'\n[{time.asctime()}] {ServerStopError}')
                 self.run = True
                 self.Display.append('<--ServerStopError-->')
                 self.Display.append(str(ServerStopError))
